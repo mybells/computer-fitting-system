@@ -1,0 +1,163 @@
+1.config连接数据库
+   <?php
+	header("Content-type: text/html; charset=utf-8");
+	define('HOST', '127.0.0.1');
+	define('USERNAME', 'root');
+	define('PASSWORD', '123');
+?>
+2.connect连接数据库
+<?php
+	header("Content-type: text/html; charset=utf-8");
+	define('HOST', '127.0.0.1');
+	define('USERNAME', 'root');
+	define('PASSWORD', '123');
+?>
+3.denglu用户登录
+$username=$_POST['username'];
+$password=$_POST['password'];
+$sql="select * from login where username='{$username}'";  
+$rs=mysql_query($sql); //执行sql查询
+$num=mysql_num_rows($rs); //获取记录数
+if($num){ // 用户存在；
+   $row=mysql_fetch_array($rs);
+if($username===$row['username']&&$password===$row['password']){ //对密码进行判断。
+    $_SESSION['username']=$row['username'];
+  echo "<script>alert('登陆成功，正在为你跳转至后台页面');window.location.href='222.php';</script>";
+    }
+    else{
+echo "<script>alert('密码不正确,返回登陆页面');window.location.href='denglu.php';</script>";
+} }
+else{
+ echo "<script>alert('用户不存在,返回登陆页面');window.location.href='denglu.php';</script>";
+}
+4.搜索
+session_start();
+	require_once('connect.php');
+	$keyword=$_POST['keyword'];
+	if ($keyword=="") {
+		echo "<script>alert('你要搜索的关键字不能为空');window.location.href='222.php';</script>";
+	}
+	$query = mysql_query("select * from search where shangping like '%$keyword%'");
+	$qq=array();
+	
+	
+	while ($data = mysql_fetch_array($query)) {
+		$qq[]=$data;
+	$q=$data['shangping'];
+  $w=$data['jiage'];
+  $e=$data['tupian'];
+   $r=$data['shangpingxiangqing'];?>
+<div class="bottom">
+<div class="one">
+ <div class="bottom_1">
+ <a><img  src="<?php echo $e ?>">
+ <p><?php echo $w ?><p>
+ <h6><?php echo $q ?><h6></a>
+ </div>
+ <div  class="bottom_2" name="xuanfu">
+ <p>商品详情</p>
+ <h6><?php echo $r ?></h6>
+<a href="goumai.php?danjia=<?php echo $w ?>&spname=<?php echo $q ?>">立即购买</a>
+ <a href="joingouwu.php?danjia=<?php echo $w ?>&spname=<?php echo $w ?>">加入购物车</a>
+ </div>
+ </div>
+</div><?php } 
+           if (@is_null($q)) {
+           echo "<script>alert('抱歉，你要搜索的商品不存在。');window.history.back();;</script>";
+           }
+5.添加商品
+<?php
+    session_start();
+	require_once('connect.php');
+    $name=$_POST['name'];
+	$danjia=$_POST['danjia'];
+	$tupian=$_POST['tupian'];
+	$xiangqing=$_POST['xiangqing'];
+	//echo $name,$danjia,$tupian,$xiangqing;
+	if ($name!=""&&$danjia!=""&&$tupian!=""&&$xiangqing!="") {
+		# code...
+	
+	$insertsql = "insert into search(shangping,jiage,tupian,shangpingxiangqing) values ('$name','$danjia','$tupian','$xiangqing')";
+	if(mysql_query($insertsql)){
+		echo "<script>alert('添加成功');window.history.back();</script>";}
+	}else{
+		echo "<script>alert('添加失败');window.history.back();</script>";
+	     }
+	?>
+6.修改商品
+<?php
+    session_start();
+	require_once('connect.php');
+	 $id = $_REQUEST['id'];
+	 $name = $_POST['name'];
+	 $jiage = $_POST['jiage'];
+	 $xiangqing = $_POST['xiangqing'];
+	//echo $id,$name,$jiage,$xiangqing;
+	 $updatesql = "update search set shangping='$name',jiage='$jiage',shangpingxiangqing='$xiangqing' where id=$id";
+	if(mysql_query($updatesql)){
+		echo "<script>alert('修改成功');window.location.href='manager.php';</script>";
+	}else{
+		echo "<script>alert('修改失败');window.location.href='manager.php';</script>";
+	}
+?>
+7.删除商品
+<?php
+    session_start();
+	require_once('connect.php');
+	 $id = $_REQUEST['id'];
+	//echo $id;
+	 $sql = "delete from search where id=$id";
+	if(mysql_query($sql)){
+		echo "<script>alert('删除成功');window.location.href='manager.php';</script>";
+	}else{
+		echo "<script>alert('删除失败');window.location.href='manager.php';</script>";
+	}
+?>
+8.购买商品
+<?php
+session_start();
+	require_once('connect.php');
+     @$rr=$_SESSION['username'];
+
+    //echo "<script>alert($rr)</scrupt>";
+     if($rr)
+{   
+	date_default_timezone_set('PRC');
+	$danjia=$_GET['danjia'];
+	$spname=$_GET['spname'];
+	$date = date("Y-m-d H:i:s");
+	$insertsql = "insert into gouwu(yonghu,商品名称,单价,数量,小计,date) values ('$rr','$spname','$danjia','1','$danjia','$date')";
+
+		if(mysql_query($insertsql)){
+		echo "<script>alert('购买成功');window.location.href='222.php';</script>";
+	                               } 
+	else{
+		echo "<script>alert('购买失败');window.location.href='222.php';</script>";
+	    } 
+9.添加到购物车
+<?php
+session_start();
+	require_once('connect.php');
+     @$rr=$_SESSION['username'];
+    //echo "<script>alert($rr)</scrupt>";
+     if($rr)
+{
+	date_default_timezone_set('PRC');
+	$date = date("Y-m-d H:i:s");
+	$danjia=$_GET['danjia'];
+	$spname=$_GET['spname'];
+	$insertsql = "insert into gouwuche(yonghu,商品名称,单价,数量,小计,date) values ('$rr','$spname','$danjia','1','$danjia','$date')";
+	if(mysql_query($insertsql)){
+		echo "<script>alert('加入成功');window.location.href='222.php';</script>";
+	}else{
+		echo "<script>alert('加入失败');window.location.href='222.php';</script>";
+	}
+    
+}
+else{
+	//$rr=$_SESSION['username'];
+	 echo "<script>alert('请先登录');window.location.href='222.php';</script>";
+}
+	?>
+
+
